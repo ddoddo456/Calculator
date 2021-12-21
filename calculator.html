@@ -19,32 +19,32 @@
     </hgroup>
     <table>
       <tr>
-        <td class='cancel purple' colspan="2">CE</td>
-        <td class='operator purple'>%</td>
-        <td class='operator purple'>/</td>
+        <td class='operator' colspan="2">CE</td>
+        <td class='operator'>%</td>
+        <td class='operator'>/</td>
       </tr>
       <tr>
         <td class='number'>7</td>
         <td class='number'>8</td>
         <td class='number'>9</td>
-        <td class='operator purple'>*</td>
+        <td class='operator'>*</td>
       </tr>
       <tr>
         <td class='number'>4</td>
         <td class='number'>5</td>
         <td class='number'>6</td>
-        <td class='operator purple'>-</td>
+        <td class='operator'>-</td>
       </tr>
       <tr>
         <td class='number'>1</td>
         <td class='number'>2</td>
         <td class='number'>3</td>
-        <td class='operator purple'>+</td>
+        <td class='operator'>+</td>
       </tr>
       <tr>
         <td class='zero'>0</td>
         <td class='dot'>.</td>
-        <td class='equal purple' colspan="2">=</td>
+        <td class='operator' colspan="2">=</td>
       </tr>
     </table>
   </div>
@@ -76,128 +76,111 @@
   }
   function isEmpty(value) {
     if (value == "" || value == null || value == undefined || (value != null && typeof value == "object" && !Object.keys(value).length)) {
-      return true
-    }
-    else {
-      return false
+      return true;
+    } else {
+      return false;
     }
   }
   function calculate(param) {
     let x, y, pos;
-    function plus() {
-      for (let i = 0; i < count.plus; i++) {
-        pos = param.indexOf('+');
-        x = Number(param[pos - 1]);
-        y = Number(param[pos + 1]);
-        param.splice(pos - 1, 3);
-        param.splice(pos - 1, 0, x + y);
-      }
-      count.plus = 0;
+    for (let i = 0; i < count.percentage; i++) {
+      pos = param.indexOf('%');
+      x = Number(param[pos - 1]);
+      y = 0;
+      param.splice(pos - 1, 2);
+      param.splice(pos - 1, 0, x / 100);
     }
-    function minus() {
-      for (let i = 0; i < count.minus; i++) {
-        pos = param.indexOf('-');
-        x = Number(param[pos - 1]);
-        y = Number(param[pos + 1]);
-        param.splice(pos - 1, 3);
-        param.splice(pos - 1, 0, x - y);
-      }
-      count.minus = 0;
+    count.percentage = 0;
+    for (let i = 0; i < count.multiply; i++) {
+      pos = param.indexOf('*');
+      x = Number(param[pos - 1]);
+      y = Number(param[pos + 1]);
+      param.splice(pos - 1, 3);
+      param.splice(pos - 1, 0, x * y);
     }
-    function multiply() {
-      for (let i = 0; i < count.multiply; i++) {
-        pos = param.indexOf('*');
-        x = Number(param[pos - 1]);
-        y = Number(param[pos + 1]);
-        param.splice(pos - 1, 3);
-        param.splice(pos - 1, 0, x * y);
-      }
-      count.multiply = 0;
+    count.multiply = 0;
+    for (let i = 0; i < count.divide; i++) {
+      pos = param.indexOf('/');
+      x = Number(param[pos - 1]);
+      y = Number(param[pos + 1]);
+      param.splice(pos - 1, 3);
+      param.splice(pos - 1, 0, x / y);
     }
-    function divide() {
-      for (let i = 0; i < count.divide; i++) {
-        pos = param.indexOf('/');
-        x = Number(param[pos - 1]);
-        y = Number(param[pos + 1]);
-        param.splice(pos - 1, 3);
-        param.splice(pos - 1, 0, x / y);
-      }
-      count.divide = 0;
+    count.divide = 0;
+    for (let i = 0; i < count.plus; i++) {
+      pos = param.indexOf('+');
+      x = Number(param[pos - 1]);
+      y = Number(param[pos + 1]);
+      param.splice(pos - 1, 3);
+      param.splice(pos - 1, 0, x + y);
     }
-    function percentage() {
-      for (let i = 0; i < count.percentage; i++) {
-        pos = param.indexOf('%');
-        x = Number(param[pos - 1]);
-        y = 0;
-        param.splice(pos - 1, 2);
-        param.splice(pos - 1, 0, x / 100);
-      }
-      count.percentage = 0;
+    count.plus = 0;
+    for (let i = 0; i < count.minus; i++) {
+      pos = param.indexOf('-');
+      x = Number(param[pos - 1]);
+      y = Number(param[pos + 1]);
+      param.splice(pos - 1, 3);
+      param.splice(pos - 1, 0, x - y);
     }
-    percentage();
-    multiply();
-    divide();
-    minus();
-    plus();
+    count.minus = 0;
     return array[0];
   }
-  document.querySelectorAll('.number').forEach(function (e) {
-    e.addEventListener('click', function () {
-      input += this.innerText;
-      h1.innerText = input;
-    });
-  });
-  document.querySelector('.zero').addEventListener('click', function () {
-    if (input.match(/\./gi) == null) {
-      if (input.match(/\b0/gi) == null) {
-        input += this.innerText;
+  document.querySelector('table').addEventListener('click', e => {
+    switch (e.target.className) {
+      case 'number':
+        input += e.target.innerText;
         h1.innerText = input;
-      }
-    } else {
-      input += this.innerText;
-      h1.innerText = input;
+        break;
+      case 'zero':
+        if (input.match(/\./gi) == null) {
+          if (input.match(/\b0/gi) == null) {
+            input += e.target.innerText;
+            h1.innerText = input;
+          }
+        } else {
+          input += e.target.innerText;
+          h1.innerText = input;
+        }
+        break;
+      case 'dot':
+        let i = input.length;
+        let temp = '';
+        while (i > 0) {
+          i--;
+          if (input[i] == '+' || input[i] == '-' || input[i] == '*' || input[i] == '/' || input[i] == '%') { break; }
+          temp += input[i];
+        }
+        if (isEmpty(temp.match(/\./gi)) && !input == '' && !temp == '') {
+          input += e.target.innerText;
+          h1.innerText = input;
+        }
+        break;
+      case 'operator':
+        let lastString = h1.innerText[h1.innerText.length - 1];
+        if (e.target.innerText === '=') {
+          if (!isEmpty(lastString.match(/[0-9%]/gi))) {
+            getArray();
+            h1.innerText = calculate(array);
+            h2.innerText = input;
+            input = String(calculate(array));
+            array = [];
+          }
+        } else if (e.target.innerText === 'CE') {
+          input = input.slice(0, -1);
+          h1.innerText = input;
+        } else {
+          if (!isEmpty(lastString.match(/[0-9%]/gi))) {
+            input += e.target.innerText;
+            h1.innerText += e.target.innerText;
+            e.target.innerText == '+' ? count.plus++ : null;
+            e.target.innerText == '-' ? count.minus++ : null;
+            e.target.innerText == '*' ? count.multiply++ : null;
+            e.target.innerText == '/' ? count.divide++ : null;
+            e.target.innerText == '%' ? count.percentage++ : null;
+          }
+        }
+        break;
     }
-  });
-  document.querySelector('.cancel').addEventListener('click', function () {
-    input = input.slice(0, -1);
-    h1.innerText = input;
-  });
-  document.querySelector('.dot').addEventListener('click', function () {
-    let i = input.length;
-    let temp = '';
-    while (i > 0) {
-      i--;
-      if (input[i] == '+' || input[i] == '-' || input[i] == '*' || input[i] == '/' || input[i] == '%') { break; }
-      temp += input[i];
-    }
-    if (isEmpty(temp.match(/\./gi)) && !input == '' && !temp == '') {
-      input += this.innerText;
-      h1.innerText = input;
-    }
-  });
-  document.querySelector('.equal').addEventListener('click', function () {
-    let lastString = h1.innerText[h1.innerText.length - 1];
-    if (!isEmpty(lastString.match(/[0-9%]/gi))) {
-      getArray();
-      h1.innerText = calculate(array);
-      h2.innerText = input;
-      input = String(calculate(array));
-      array = [];
-    }
-  });
-  document.querySelectorAll('.operator').forEach(function (e) {
-    e.addEventListener('click', function () {
-      let lastString = h1.innerText[h1.innerText.length - 1];
-      if (!isEmpty(lastString.match(/[0-9%]/gi))) {
-        input += this.innerText;
-        h1.innerText += e.innerText;
-        e.innerText == '+' ? count.plus++ : null;
-        e.innerText == '-' ? count.minus++ : null;
-        e.innerText == '*' ? count.multiply++ : null;
-        e.innerText == '/' ? count.divide++ : null;
-        e.innerText == '%' ? count.percentage++ : null;
-      }
-    });
   });
 </script>
 
